@@ -1,0 +1,14 @@
+version: '3.4'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+  kafka:
+    image: confluentinc/cp-kafka
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+  telegrambot.service:
+    image: ${DOCKER_REGISTRY-}telegrambotservice
+    build:
+      context: .
+      dockerfile: TelegramBot.Service/Dockerfile

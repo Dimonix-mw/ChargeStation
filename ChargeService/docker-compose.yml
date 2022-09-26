@@ -1,0 +1,28 @@
+version: '3.4'
+
+services:
+  chargeServicePGDB:
+   image: postgres:14.4-alpine
+
+  pgadmin:
+    image: dpage/pgadmin4
+
+  chargeservice.api:
+    image: ${DOCKER_REGISTRY-}chargeserviceapi
+    build:
+      context: .
+      dockerfile: ChargeService.API/Dockerfile
+
+  chargeservice.kafka.consumer:
+    image: ${DOCKER_REGISTRY-}chargeservicekafkaconsumer
+    build:
+      context: .
+      dockerfile: ChargeService.Kafka.Consumer/Dockerfile
+
+  chargeservice.messagebroker.consumer:
+    image: ${DOCKER_REGISTRY-}chargeservicemessagebrokerconsumer
+    build:
+      context: .
+      dockerfile: ChargeService.MessageBroker.Consumer/Dockerfile
+
+

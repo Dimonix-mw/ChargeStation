@@ -1,0 +1,250 @@
+﻿1. ChargeService
+
+Предоставляет API для мобильного телефона клиента для 
+осуществления процесса зарядки.
+
+1.1. Описание сущностей
+
+    Сущности БД:
+
+    /// <summary>
+    /// Подача
+    /// </summary>
+    public class Filling
+    {
+        /// <summary>
+        /// Идентификатор
+        /// </summary>
+        public long Id { get; set; }
+        /// <summary>
+        /// Идентификатор клиента
+        /// </summary>
+        public int UserId { get; set; }
+        /// <summary>
+        /// Идентификатор зарядки
+        /// </summary>
+        public int PumpId { get; set; }
+        /// <summary>
+        /// Идентификатор промоакции
+        /// </summary>
+        public int PromotionId { get; set; }
+        /// <summary>
+        /// Сумма по промоакции
+        /// </summary>
+        public decimal PromotionAmount { get; set; }
+        /// <summary>
+        /// Всего денег
+        /// </summary>
+        public decimal TotalMoneyAmount { get; set; }
+        /// <summary>
+        /// Сумма бонуса
+        /// </summary>
+        public decimal BonusAmount { get; set; }
+        /// <summary>
+        /// Идентификатор расчета бонуса
+        /// </summary>
+        public int BonusCalculateRuleId { get; set; }
+        /// <summary>
+        /// FK Session.Id
+        /// </summary>
+        public long SessionId { get; set; }
+        /// <summary>
+        /// FK Entity
+        /// </summary>
+        public Session Session { get; set; }
+        /// <summary>
+        /// Время зарядки, в запросе от мобильного устройства
+        /// </summary>
+        public int Minutes { get; set; }
+    }
+
+    /// <summary>
+    /// Представляет сессию зарядки
+    /// </summary>
+    public class Session
+    {
+        /// <summary>
+        /// Идентификатор
+        /// </summary>
+        public long Id { get; set; }
+        /// <summary>
+        /// Идентификатор клиента
+        /// </summary>
+        public int UserId { get; set; }
+        /// <summary>
+        /// Идентификатор, отправляемый мобильным устройством
+        /// и уникально характеризующий запрос с мобильного устройства
+        /// </summary>
+        public Guid RequestId { get; set; }
+        /// <summary>
+        /// Дата создания запроса
+        /// </summary>
+        public DateTime Created { get; set; }
+        /// <summary>
+        /// Время зарядки, в запросе от мобильного устройства
+        /// </summary>
+        public int Minutes { get; set; }
+        /// <summary>
+        /// Статус зарядки
+        /// 0 - Зарядка еще не началась
+        /// 1 - Идет процесс зарядки
+        /// 2 - Зарядка завершена
+        /// 3 - Статус зарядки неизвестен
+        /// 4 - Зарядка принудительно завершена
+        /// </summary>
+        public int Status { get; set; }
+    }
+
+    ---------
+
+Запрос от клиента на зарядку:
+
+    /// <summary>
+    /// Запрос на зарядку от мобильного устройства
+    /// </summary>
+    public class InsertPumpRequestDto
+    {
+        /// <summary>
+        /// Идентификатор клиента
+        /// </summary>
+        public int UserId { get; set; }
+        /// <summary>
+        /// Идентификатор, отправляемый мобильным устройством
+        /// и уникально характеризующий запрос с мобильного устройства
+        /// </summary>
+        public Guid RequestId { get; set; }
+        /// <summary>
+        /// Время зарядки, в запросе от мобильного устройства
+        /// </summary>
+        public int Minutes { get; set; }
+        /// <summary>
+        /// Идентификатор зарядки
+        /// </summary>
+        public int PumpId { get; set; }
+        /// <summary>
+        /// Идентификатор промоакции
+        /// </summary>
+        public int? PromotionId { get; set; }
+        /// <summary>
+        /// Сумма по промоакции
+        /// </summary>
+        public decimal? PromotionAmount { get; set; }
+        /// <summary>
+        /// Всего денег
+        /// </summary>
+        public decimal? TotalMoneyAmount { get; set; }
+        /// <summary>
+        /// Сумма бонуса
+        /// </summary>
+        public decimal? BonusAmount { get; set; }
+        /// <summary>
+        /// Идентификатор расчета бонуса
+        /// </summary>
+        public int? BonusCalculateRuleId { get; set; }
+    }
+    -----
+Запрос на статус состояния зарядки:
+    /// <summary>
+    /// Ответ о статусе зарядки
+    /// </summary>
+    public class CheckPumpStatusResponseDto
+    {
+        /// <summary>
+        /// Статус зарядки
+        /// 0 - Зарядка еще не началась
+        /// 1 - Идет процесс зарядки
+        /// 2 - Зарядка завершена
+        /// 3 - Статус зарядки неизвестен
+        /// 4 - Зарядка принудительно завершена
+        /// </summary>
+        public int Status { get; set; }
+    }
+    
+    -------
+    
+    rabbitMQ:
+
+    /// <summary>
+    /// Запрос на начало зарядки в очередь StartChargeMQRequest
+    /// в микросервис PlatformService
+    /// </summary>
+    public class StartChargeMQRequest
+    {
+        /// <summary>
+        /// Идентификатор Filling
+        /// </summary>
+        public long FillingId { get; set; }
+        /// <summary>
+        /// Идентификатор клиента
+        /// </summary>
+        public int UserId { get; set; }
+        /// <summary>
+        /// Идентификатор зарядки
+        /// </summary>
+        public int PumpId { get; set; }
+        /// <summary>
+        /// Идентификатор промоакции
+        /// </summary>
+        public int? PromotionId { get; set; }
+        /// <summary>
+        /// Сумма по промоакции
+        /// </summary>
+        public decimal? PromotionAmount { get; set; }
+        /// <summary>
+        /// Всего денег
+        /// </summary>
+        public decimal? TotalMoneyAmount { get; set; }
+        /// <summary>
+        /// Сумма бонуса
+        /// </summary>
+        public decimal? BonusAmount { get; set; }
+        /// <summary>
+        /// Идентификатор расчета бонуса
+        /// </summary>
+        public int? BonusCalculateRuleId { get; set; }
+        /// <summary>
+        /// FK Session.Id
+        /// </summary>
+        public int SessionId { get; set; }
+        /// <summary>
+        /// Идентификатор, отправляемый мобильным устройством
+        /// и уникально характеризующий запрос с мобильного устройства
+        /// </summary>
+        public Guid RequestId { get; set; }
+        /// <summary>
+        /// Дата создания запроса
+        /// </summary>
+        public DateTime Created { get; set; }
+    }
+
+    /// <summary>
+    /// Обновление статуса зарядки - 
+    /// возвращается от микросервиса PlatformService в очередь UpdateRequestMQStatus
+    /// </summary>
+    public class UpdateRequestMQStatus
+    {
+        /// <summary>
+        /// Идентификатор, отправляемый мобильным устройством
+        /// и уникально характеризующий запрос с мобильного устройства
+        /// </summary>
+        public Guid RequestId { get; set; }
+        /// <summary>
+        /// Статус зарядки
+        /// 0 - Зарядка еще не началась
+        /// 1 - Идет процесс зарядки
+        /// 2 - Зарядка завершена
+        /// 3 - Статус зарядки неизвестен
+        /// 4 - Зарядка принудительно завершена
+        /// </summary>
+        public int Status { get; set; }
+    }
+
+
+1.2. Функции микросервиса
+
+Работает примерно так:
+Приходит запрос от клиента InsertPumpRequestDto,
+данные сохраняются в бд (объекты Filling и Session),
+а также отправляется сообщение StartChargeMQRequest в rabbitMQ в микросервис PlatformService.
+PlatformService отправляет в очередь сообщение UpdateRequestMQStatus, где сообщает о состоянии
+зарядной станции - ChargeService меняет статус.

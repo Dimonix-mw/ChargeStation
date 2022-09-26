@@ -1,0 +1,82 @@
+version: '3.4'
+
+services:
+  chargeServicePGDB:
+    container_name: chargeServicePGDB
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=060670
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=chargestation
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+          # copy the sql script to create tables
+      - ./sql/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    networks:
+      - resolute
+
+  pgadmin:
+    container_name: pgadmin4_container
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    networks:
+      - resolute
+
+  chargeservice.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+    ports:
+      - "80"
+      - "443"
+    depends_on:
+      - kafka
+      - rabbitmq
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+    networks:
+      - resolute
+
+  chargeservice.kafka.consumer:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:444;http://+:81
+    ports:
+     - "81"
+     - "444"
+    depends_on:
+      - kafka
+      - rabbitmq
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+    networks:
+      - resolute
+
+  chargeservice.messagebroker.consumer:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:445;http://+:82
+      - WAIT_HOSTS=chargeServicePGDB:5432
+    ports:
+      - "82"
+      - "445"
+    depends_on:
+      - kafka
+      - rabbitmq
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+    networks:
+      - resolute
+
+networks:
+  resolute:
+    external:
+      name: resolute
